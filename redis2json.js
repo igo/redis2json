@@ -42,7 +42,7 @@ var map = {
 }
 
 map = {
-	$$posts: { variable: "postId", cmd: "lrange", key: "posts", args: [5, 10] },
+	$$posts: { variable: "postId", cmd: "lrange", key: "posts", args: [1, 30] },
 	posts: [ map ]
 }
 
@@ -54,7 +54,7 @@ var variables = {
 function loadValue(key, redisKey, variables) {
 	return function (callback) {
 		var expandedRedisKey = fillVariables(redisKey, variables);
-		sys.debug("REDIS EXPANDED " + redisKey + " to " + expandedRedisKey + " with: " + sys.inspect(variables));
+		sys.debug("LOAD VALUE " + redisKey + " to " + expandedRedisKey + " with: " + sys.inspect(variables));
 		redis.get(expandedRedisKey, function (error, value) {
 			// sys.debug("REDIS LOADED key " + expandedRedisKey + ": " + value);
 			if (key) {
@@ -71,15 +71,14 @@ function loadValue(key, redisKey, variables) {
 
 function loadArray(key, map, variables, arrayCommand) {
 	return function (callback) {
-		// sys.debug("ARRAY LOADING " + sys.inspect(arrayCommand));
+		sys.debug("LOAD ARRAY " + key + " ; cmd: " + sys.inspect(arrayCommand));
 		var expandedRedisKey = fillVariables(arrayCommand.key, variables);
 		var args = arrayCommand.args || [];
 		args.unshift(expandedRedisKey);
 		args.push(function (error, array) {
-			array = array || []; // avoid errors if array is empty
 			if (array) { // array is not empty
 				redislib.convertMultiBulkBuffersToUTF8Strings(array);
-				// sys.debug("ARRAY LOADED " + sys.inspect(array));
+				sys.debug("REDIS ARRAY LOADED " + sys.inspect(array));
 				for (var i=0; i < array.length; i++) {
 					variables[arrayCommand.variable] = array[i];
 
@@ -111,7 +110,7 @@ function loadArray(key, map, variables, arrayCommand) {
 						}
 					});				
 				}
-			} else {
+			} else { // array is empty
 				if (key) {
 					var o = {};
 					o[key] = [];
@@ -127,8 +126,8 @@ function loadArray(key, map, variables, arrayCommand) {
 }
 
 function loadObject(key, map, variables) {
-	// sys.debug("LOAD OBJECT: " + key + "; ");
 	return function (callback) {
+		sys.debug("LOAD OBJECT: " + key + "; " + sys.inspect(map));
 		var actions = [];
 		var newVariablesActions = [];
 		
@@ -202,6 +201,7 @@ load(map, variables, function (error, result) {
 	sys.debug("LOADED Result: " + sys.inspect(result) + "ERROR" + sys.inspect(error));
 	sys.debug("LOADED COMMENTS Result: " + sys.inspect(result.comments) + "ERROR" + sys.inspect(error));
 	// sys.debug("LOADED FINALE VARIABLES: " + sys.inspect(variables) + "MAP" + sys.inspect(map));
+	sys.debug("LOADED SERIALIZED Result: " + JSON.stringify(result));
 });
 
 
