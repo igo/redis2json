@@ -79,12 +79,12 @@ function loadArray(key, map, variables, arrayCommand) {
 			if (array) { // array is not empty
 				redislib.convertMultiBulkBuffersToUTF8Strings(array);
 				sys.debug("REDIS ARRAY LOADED " + sys.inspect(array));
+				var actions = [];
 				for (var i=0; i < array.length; i++) {
 					variables[arrayCommand.variable] = array[i];
-
+					sys.debug("LOAD ARRAY vars: " + JSON.stringify(variables));
 
 					// collect actions that will be loaded
-					var actions = [];
 					for (var prop in map) {
 						if(map.hasOwnProperty(prop) && prop.substr(0, 1) != "$") {
 							sys.debug("Property: " + prop + ", type: " + typeof map[prop]);
@@ -99,17 +99,17 @@ function loadArray(key, map, variables, arrayCommand) {
 							}
 						}
 					}
-					async.parallel(actions, function (error, results) {
-						sys.debug("ARRAY LOADED Result: " + sys.inspect(results));
-						if (key) {
-							var o = {};
-							o[key] = results;
-							callback(error, o);
-						} else {
-							callback(error, o)
-						}
-					});				
 				}
+				async.parallel(actions, function (error, results) {
+					// sys.debug("ARRAY LOADED Result: " + sys.inspect(results));
+					if (key) {
+						var o = {};
+						o[key] = results;
+						callback(error, o);
+					} else {
+						callback(error, o)
+					}
+				});				
 			} else { // array is empty
 				if (key) {
 					var o = {};
@@ -127,7 +127,7 @@ function loadArray(key, map, variables, arrayCommand) {
 
 function loadObject(key, map, variables) {
 	return function (callback) {
-		sys.debug("LOAD OBJECT: " + key + "; " + sys.inspect(map));
+		sys.debug("LOAD OBJECT: " + key + "; " + JSON.stringify(variables) + "; " + sys.inspect(map));
 		var actions = [];
 		var newVariablesActions = [];
 		
@@ -142,7 +142,7 @@ function loadObject(key, map, variables) {
 		}
 		
 		// load variables
-		sys.debug("load variables: Executing parallel: " + sys.inspect(newVariablesActions));
+		// sys.debug("load variables: Executing parallel: " + sys.inspect(newVariablesActions));
 		async.parallel(newVariablesActions, function (error, results) {
 			for (var i=0; i < results.length; i++) {
 				for (var prop in results[i]) {
@@ -154,7 +154,7 @@ function loadObject(key, map, variables) {
 			// collect actions that will be loaded
 			for (var prop in map) {
 				if(map.hasOwnProperty(prop) && prop.substr(0, 1) != "$") {
-					sys.debug("Property: " + prop + ", type: " + typeof map[prop]);
+					// sys.debug("Property: " + prop + ", type: " + typeof map[prop]);
 					if (typeof map[prop] === "string") {
 						actions.push(loadValue(prop, map[prop], variables));
 					} else if (typeof map[prop] === "object" && !Array.isArray(map[prop])) {
@@ -162,13 +162,13 @@ function loadObject(key, map, variables) {
 					} else if (typeof map[prop] === "object" && Array.isArray(map[prop])) {
 						actions.push(loadArray(prop, map[prop], variables, map["$$" + prop]));
 					} else {
-						sys.debug("Property: " + prop + ", type: " + typeof map[prop]);
+						// sys.debug("Property: " + prop + ", type: " + typeof map[prop]);
 					}
 				}
 			}
 
 			// load values, objects, arrays
-			sys.debug("Executing parallel: " + sys.inspect(actions));
+			// sys.debug("Executing parallel: " + sys.inspect(actions));
 			async.parallel(actions, function (error, results) {
 				var o = {};
 				for (var i=0; i < results.length; i++) {
@@ -176,7 +176,7 @@ function loadObject(key, map, variables) {
 						o[prop] = results[i][prop];
 					}
 				};
-				sys.debug("OBJECT LOADED Result: " + sys.inspect(o));
+				// sys.debug("OBJECT LOADED Result: " + sys.inspect(o));
 				if (key) {
 					var o2 = {};
 					o2[key] = o;
