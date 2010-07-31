@@ -17,6 +17,15 @@ function fillVariables(text, variables) {
 	return newText;
 }
 
+var clone = function(obj) {
+  var newObj = (obj instanceof Array) ? [] : {};
+  for (i in obj) {
+    if (i == 'clone') continue;
+    if (obj[i] && typeof obj[i] == "object") {
+      newObj[i] = obj[i].clone();
+    } else newObj[i] = obj[i]
+  } return newObj;
+};
 
 var map = {
 	text: "post:{postId}:text",
@@ -54,7 +63,7 @@ var variables = {
 function loadValue(key, redisKey, variables) {
 	return function (callback) {
 		var expandedRedisKey = fillVariables(redisKey, variables);
-		sys.debug("LOAD VALUE " + redisKey + " to " + expandedRedisKey + " with: " + sys.inspect(variables));
+		// sys.debug("LOAD VALUE " + redisKey + " to " + expandedRedisKey + " with: " + sys.inspect(variables));
 		redis.get(expandedRedisKey, function (error, value) {
 			// sys.debug("REDIS LOADED key " + expandedRedisKey + ": " + value);
 			if (key) {
@@ -81,19 +90,21 @@ function loadArray(key, map, variables, arrayCommand) {
 				sys.debug("REDIS ARRAY LOADED " + sys.inspect(array));
 				var actions = [];
 				for (var i=0; i < array.length; i++) {
-					variables[arrayCommand.variable] = array[i];
-					sys.debug("LOAD ARRAY vars: " + JSON.stringify(variables));
+					var newVars = clone(variables);
+					// variables[arrayCommand.variable] = array[i];
+					newVars[arrayCommand.variable] = array[i];
+					sys.debug("LOAD ARRAY vars: " + array[i] + " ; " + JSON.stringify(variables));
 
 					// collect actions that will be loaded
 					for (var prop in map) {
 						if(map.hasOwnProperty(prop) && prop.substr(0, 1) != "$") {
 							sys.debug("Property: " + prop + ", type: " + typeof map[prop]);
 							if (typeof map[prop] === "string") {
-								actions.push(loadValue(null, map[prop], variables));
+								actions.push(loadValue(null, map[prop], newVars));
 							} else if (typeof map[prop] === "object" && !Array.isArray(map[prop])) {
-								actions.push(loadObject(null, map[prop], variables));
+								actions.push(loadObject(null, map[prop], newVars));
 							} else if (typeof map[prop] === "object" && Array.isArray(map[prop])) {
-								actions.push(loadArray(null, map[prop], variables, map["$$" + prop]));
+								actions.push(loadArray(null, map[prop], newVars, map["$$" + prop]));
 							} else {
 								sys.debug("Property: " + prop + ", type: " + typeof map[prop]);
 							}
@@ -127,13 +138,14 @@ function loadArray(key, map, variables, arrayCommand) {
 
 function loadObject(key, map, variables) {
 	return function (callback) {
-		sys.debug("LOAD OBJECT: " + key + "; " + JSON.stringify(variables) + "; " + sys.inspect(map));
+		sys.debug("LOAD OBJECT: " + key + "; " + JSON.stringify(variables));
+		// sys.debug("LOAD OBJECT: " + key + "; " + JSON.stringify(variables) + "; " + sys.inspect(map));
 		var actions = [];
 		var newVariablesActions = [];
 		
 		// collect actions that load new variables
 		for (var prop in map) {
-			if(map.hasOwnProperty(prop) && prop.substr(0, 1) == "$") {
+			if(map.hasOwnProperty(prop) && prop.substr(0, 1) == "$" && prop.substr(1, 1) != "$") {
 				// sys.debug("Property: " + prop + ", type: " + typeof map[prop]);
 				if (typeof map[prop] === "string") {
 					newVariablesActions.push(loadValue(prop.substr(1), map[prop], variables));
