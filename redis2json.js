@@ -28,6 +28,7 @@ var clone = function(obj) {
 };
 
 var map = {
+	postId: ":{postId}",
 	text: "post:{postId}:text",
 	created: "post:{postId}:created",
 	$authorId: "post:{postId}:author",
@@ -63,18 +64,24 @@ var variables = {
 function loadValue(key, redisKey, variables) {
 	return function (callback) {
 		var expandedRedisKey = fillVariables(redisKey, variables);
-		// sys.debug("LOAD VALUE " + redisKey + " to " + expandedRedisKey + " with: " + sys.inspect(variables));
-		redis.get(expandedRedisKey, function (error, value) {
-			// sys.debug("REDIS LOADED key " + expandedRedisKey + ": " + value);
-			if (key) {
-				var o = {};
-				o[key] = value;
-				redislib.convertMultiBulkBuffersToUTF8Strings(o);
-				callback(error, o);
-			} else {
-				callback(error, value)
-			}
-		});
+		sys.debug("LOAD VALUE " + redisKey + " to " + expandedRedisKey + " with: " + sys.inspect(variables));
+		if (redisKey.substr(0, 1) == ":") { // static string
+			var o = {};
+			o[key] = expandedRedisKey.substr(1);
+			callback(null, o)
+		} else { // redis key
+			redis.get(expandedRedisKey, function (error, value) {
+				// sys.debug("REDIS LOADED key " + expandedRedisKey + ": " + value);
+				if (key) {
+					var o = {};
+					o[key] = value;
+					redislib.convertMultiBulkBuffersToUTF8Strings(o);
+					callback(error, o);
+				} else {
+					callback(error, value)
+				}
+			});
+		}
 	}
 }
 
@@ -210,8 +217,8 @@ function load(map, variables, callback) {
 }
 
 load(map, variables, function (error, result) {
-	sys.debug("LOADED Result: " + sys.inspect(result) + "ERROR" + sys.inspect(error));
-	sys.debug("LOADED COMMENTS Result: " + sys.inspect(result.comments) + "ERROR" + sys.inspect(error));
+	sys.debug("LOADED Result: " + sys.inspect(result, false, 10) + "ERROR" + sys.inspect(error));
+	sys.debug("LOADED COMMENTS Result: " + sys.inspect(result.comments, false, 10) + "ERROR" + sys.inspect(error));
 	// sys.debug("LOADED FINALE VARIABLES: " + sys.inspect(variables) + "MAP" + sys.inspect(map));
 	sys.debug("LOADED SERIALIZED Result: " + JSON.stringify(result));
 });
