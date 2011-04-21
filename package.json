@@ -1,16 +1,20 @@
 {
-  "name"          : "redis2json",
-  "description"   : "Consolidates redis keys data into a solid JavaScript object",
-  "url"           : "https://github.com/dvv/redis2json/",
-  "keywords"      : ["redis", "keys", "data", "javascript", "helper"],
-  "author"        : "Igor Urminček",
-  "contributors"  : [{
-    "dvv": "Vladimir Dronnikov <dronnikov@gmail.com>"
-  }],
-  "dependencies"  : {
-    "async": ""
-  },
-  "lib"           : "lib",
-  "main"          : "index.js",
-  "version"       : "0.0.4"
+	"name": "redis2json",
+	"description": "Consolidates redis keys data into a solid JavaScript object",
+	"url": "https://github.com/igo/redis2json",
+	"keywords": ["redis", "mapping", "keys", "data", "javascript", "helper"],
+	"author": "Igor Urminček",
+	"contributors": [{
+		"dvv": "Vladimir Dronnikov <dronnikov@gmail.com>"
+	}],
+	"dependencies": {
+		"async": ""
+	},
+	"lib": "lib",
+	"main": "index.js",
+	"version": "0.0.5",
+	"repository": {
+		"type": "git",
+		"url": "git://github.com/igo/redis2json.git"
+	}
 }
