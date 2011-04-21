@@ -4,9 +4,9 @@
   "url"           : "https://github.com/dvv/redis2json/",
   "keywords"      : ["redis", "keys", "data", "javascript", "helper"],
   "author"        : "Igor Urminček",
-  "contributors"  : [
+  "contributors"  : [{
     "dvv": "Vladimir Dronnikov <dronnikov@gmail.com>"
-  ],
+  }],
   "dependencies"  : {
     "async": ""
   },
