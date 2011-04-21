@@ -1,10 +1,7 @@
 var sys = require("sys"),
-	redislib = require("./lib/redis-client"),
+	redislib = require("redis"),
 	redis = redislib.createClient(),
 	redis2json = require("./lib/redis2json");
-
-redis2json.redis = redis;
-
 
 
 var map = {
