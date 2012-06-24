@@ -7,7 +7,7 @@ Usage
 -----
 Download and add to your code require statement and set connection to Redis. Then you are ready to load data.
 
-	var sys = require("sys"),
+	var util = require('util'),
 		redislib = require("./lib/redis-client"),
 		redis = redislib.createClient(),
 		redis2json = require("./lib/redis2json");
@@ -48,7 +48,7 @@ Let say we have a Facebook-like application and we use these keys in Redis datab
 	}
 	
 	redis2json.load(map, variables, function (error, result) {
-		sys.debug("Post with ID 1: " + sys.inspect(result));
+		util.debug("Post with ID 1: " + util.inspect(result));
 	});
 
 Result will look like:
@@ -75,7 +75,7 @@ Sometime we don't want to load all object properties from Redis or we already lo
 	}
 	
 	redis2json.load(map, variables, function (error, result) {
-		sys.debug("Post with ID 1: " + sys.inspect(result));
+		util.debug("Post with ID 1: " + util.inspect(result));
 	});
 
 Result will look like:
@@ -162,7 +162,7 @@ Example:
 	}
 
 	redis2json.load(map, variables, function (error, result) {
-		sys.debug("Post ID 1 with comments: " + sys.inspect(result));
+		util.debug("Post ID 1 with comments: " + util.inspect(result));
 	});
 
 Result:
@@ -210,7 +210,7 @@ Now combine it all together and load first 20 posts with authors and comments an
 	}
 	
 	redis2json.load(map, {}, function (error, result) {
-	    sys.debug("Posts with comments: " + sys.inspect(result, false, 10));
+	    util.debug("Posts with comments: " + util.inspect(result, false, 10));
 	});
 
 
