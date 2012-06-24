@@ -1,4 +1,4 @@
-var sys = require("sys"),
+var util = require('util'),
 	redislib = require("redis"),
 	redis = redislib.createClient(),
 	redis2json = require("./lib/redis2json");
@@ -44,9 +44,9 @@ var variables = {
 
 redis2json.load(map, variables, function (error, object) {
 	if (error) {
-		sys.debug("LOADED ERROR: " + error + "; OBJ: " + sys.inspect(object, false, 10));
+		util.debug("LOADED ERROR: " + error + "; OBJ: " + util.inspect(object, false, 10));
 	} else {
-		sys.debug("LOADED: " + sys.inspect(object, false, 10));
+		util.debug("LOADED: " + util.inspect(object, false, 10));
 	}
 });
 
